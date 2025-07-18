@@ -1,148 +1,122 @@
--- Services
 local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+-- 👤 LOCAL PLAYER + GUI
 local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- UI Setup
-local playerGui = LocalPlayer:WaitForChild("PlayerGui")
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "GrowAGardenLoading"
+-- 🎯 SPOOFED VALUES
+local SPOOFED_AGE = 50
+local LOAD_TIME = 60 -- seconds
+
+-- ✅ Remove old UI if it exists
+if PlayerGui:FindFirstChild("PetSpooferUI") then
+	PlayerGui:FindFirstChild("PetSpooferUI"):Destroy()
+end
+
+-- 📦 UI CREATION
+local screenGui = Instance.new("ScreenGui", PlayerGui)
+screenGui.Name = "PetSpooferUI"
 screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui
 
--- Main container
-local container = Instance.new("Frame")
-container.Size = UDim2.new(0.6, 0, 0.6, 0)
-container.Position = UDim2.new(0.5, 0, 0.5, 0)
-container.AnchorPoint = Vector2.new(0.5, 0.5)
-container.BackgroundColor3 = Color3.fromRGB(100, 175, 60)
-container.BorderSizePixel = 0
-container.Parent = screenGui
-Instance.new("UICorner", container).CornerRadius = UDim.new(0.05, 0)
+-- Main draggable frame
+local frame = Instance.new("Frame", screenGui)
+frame.Size = UDim2.new(0, 260, 0, 150)
+frame.Position = UDim2.new(0.5, -130, 0.65, 0)
+frame.BackgroundColor3 = Color3.fromRGB(40, 44, 52)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
 
 -- Title
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 60)
-title.Position = UDim2.new(0, 0, 0.05, 0)
-title.BackgroundTransparency = 1
-title.Text = "Grow A Garden"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 40
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0.2, 0)
+title.Text = "🔥 Instantly Age Pet to 50"
+title.TextScaled = true
+title.Font = Enum.Font.FredokaOne
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Parent = container
+title.BackgroundTransparency = 1
 
--- Progress Bar Background
-local barBg = Instance.new("Frame")
-barBg.Size = UDim2.new(0.8, 0, 0, 30)
-barBg.Position = UDim2.new(0.5, 0, 0.4, 0)
-barBg.AnchorPoint = Vector2.new(0.5, 0.5)
-barBg.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
-barBg.BorderSizePixel = 0
-barBg.Parent = container
-Instance.new("UICorner", barBg).CornerRadius = UDim.new(1, 0)
+-- Status label
+local status = Instance.new("TextLabel", frame)
+status.Size = UDim2.new(1, 0, 0.25, 0)
+status.Position = UDim2.new(0, 0, 0.2, 0)
+status.Text = "Ready to spoof!"
+status.TextScaled = true
+status.Font = Enum.Font.FredokaOne
+status.TextColor3 = Color3.fromRGB(0, 255, 100)
+status.BackgroundTransparency = 1
 
--- Bar Fill
-local barFill = Instance.new("Frame")
-barFill.Size = UDim2.new(0, 0, 1, 0)
-barFill.BackgroundColor3 = Color3.fromRGB(30, 120, 40)
-barFill.BorderSizePixel = 0
-barFill.Parent = barBg
-Instance.new("UICorner", barFill).CornerRadius = UDim.new(1, 0)
+-- Button
+local injectButton = Instance.new("TextButton", frame)
+injectButton.Size = UDim2.new(0.9, 0, 0.3, 0)
+injectButton.Position = UDim2.new(0.05, 0, 0.52, 0)
+injectButton.Text = "⚡ Spoof Now"
+injectButton.TextScaled = true
+injectButton.Font = Enum.Font.FredokaOne
+injectButton.TextColor3 = Color3.new(1, 1, 1)
+injectButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+injectButton.BorderSizePixel = 0
 
--- Percentage Text
-local loadingText = Instance.new("TextLabel")
-loadingText.Size = UDim2.new(1, 0, 0, 40)
-loadingText.Position = UDim2.new(0.5, 0, 0.52, 0)
-loadingText.AnchorPoint = Vector2.new(0.5, 0)
-loadingText.BackgroundTransparency = 1
-loadingText.Text = "Loading: 0%"
-loadingText.Font = Enum.Font.GothamBold
-loadingText.TextSize = 22
-loadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
-loadingText.Parent = container
+-- Credit
+local credit = Instance.new("TextLabel", frame)
+credit.Size = UDim2.new(1, 0, 0.15, 0)
+credit.Position = UDim2.new(0, 0, 0.85, 0)
+credit.Text = "Made by: yawnjiin"
+credit.TextScaled = true
+credit.Font = Enum.Font.FredokaOne
+credit.TextColor3 = Color3.fromRGB(255, 255, 255)
+credit.BackgroundTransparency = 1
 
--- Fun Fact
-local funFact = Instance.new("TextLabel")
-funFact.Size = UDim2.new(0.9, 0, 0, 40)
-funFact.Position = UDim2.new(0.5, 0, 0.7, 0)
-funFact.AnchorPoint = Vector2.new(0.5, 0)
-funFact.BackgroundTransparency = 1
-funFact.Text = "🌻 Fun Fact: Sunflowers can absorb toxins from soil!"
-funFact.Font = Enum.Font.Gotham
-funFact.TextSize = 18
-funFact.TextColor3 = Color3.fromRGB(245, 245, 245)
-funFact.TextWrapped = true
-funFact.Parent = container
+-- Loading Bar
+local loadingFrame = Instance.new("Frame", screenGui)
+loadingFrame.Size = UDim2.new(0.4, 0, 0.15, 0)
+loadingFrame.Position = UDim2.new(0.3, 0, 0.4, 0)
+loadingFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+loadingFrame.BackgroundTransparency = 0.4
+loadingFrame.Visible = false
 
--- Creator Credit
-local creator = Instance.new("TextLabel")
-creator.Size = UDim2.new(1, -20, 0, 25)
-creator.Position = UDim2.new(1, -10, 1, -10)
-creator.AnchorPoint = Vector2.new(1, 1)
-creator.BackgroundTransparency = 1
-creator.Text = "by: The_Woozoo"
-creator.Font = Enum.Font.Gotham
-creator.TextSize = 16
-creator.TextColor3 = Color3.fromRGB(255, 255, 255)
-creator.TextXAlignment = Enum.TextXAlignment.Right
-creator.Parent = container
+local percentText = Instance.new("TextLabel", loadingFrame)
+percentText.Size = UDim2.new(1, 0, 1, 0)
+percentText.Text = "Spoofing Pet Age: 0%"
+percentText.TextScaled = true
+percentText.Font = Enum.Font.FredokaOne
+percentText.TextColor3 = Color3.fromRGB(120, 255, 120)
+percentText.BackgroundTransparency = 1
 
--- Animate loading
-local duration = 20
-local steps = 100
-
-for i = 0, steps do
-	local progress = i / steps
-	barFill.Size = UDim2.new(progress, 0, 1, 0)
-	loadingText.Text = "Loading: " .. i .. "%"
-	wait(duration / steps)
+-- 👾 SPOOF FUNCTION
+local spoofedLabels = {}
+local function spoofPetInfo()
+	for _, label in ipairs(PlayerGui:GetDescendants()) do
+		if label:IsA("TextLabel") then
+			local name, kg, age = string.match(label.Text, "^(.-)%s%[(.-)%sKG%]%s%[Age%s(%d+)%]$")
+			if name and kg and age and not spoofedLabels[label] then
+				label.Text = string.format("%s [%s KG] [Age %d]", name, kg, SPOOFED_AGE)
+				spoofedLabels[label] = true
+			end
+		end
+	end
 end
 
--- Remove loading screen
-screenGui:Destroy()
+-- ⏱️ Animated loading spoof
+local function startSpoofing()
+	loadingFrame.Visible = true
+	status.Text = "Starting Spoofing..."
+	injectButton.Visible = false
 
---------------------------------------------------------------------------------
--- Egg Randomizer Script Begins
---------------------------------------------------------------------------------
+	for i = 0, 100 do
+		percentText.Text = "Changing Pet Age: " .. i .. "%"
+		wait(LOAD_TIME / 100)
+	end
 
-local EggData = {
-	["Bug Egg"] = {"Caterpillar", "Giant Ant", "Praying Mantis"},
-	["Night Egg"] = {"Night Owl", "Echo Frog", "Frog", "Mole", "Hedgehog"},
-	["Mythical Egg"] = {"Red Giant Ant", "Squirrel", "Brown Mouse", "Grey Mouse"},
-	["Dinosaur Egg"] = {"Brontosaurus", "Pterodactyl", "Stegosaurus", "Triceratops", "Raptor"},
-	["Primal Egg"] = {"Ankylosaurus", "Dilophosaurus", "Pachycephalosaurus", "Iguanodon", "Parasaurolophus"},
-	["Paradise Egg"] = {"Scarlet Macaw", "Capybara", "Peacock", "Ostrich"},
-	["Anti Egg"] = {"Bee Moth", "Tarantula Hawk", "Wasp"},
-}
+	loadingFrame.Visible = false
+	spoofPetInfo()
 
-local PetColors = {
-	["Wasp"] = Color3.fromRGB(255, 0, 0),
-	["Tarantula Hawk"] = Color3.fromRGB(255, 69, 0),
-	["Bee Moth"] = Color3.fromRGB(255, 215, 0),
-	["Peacock"] = Color3.fromRGB(0, 153, 255),
-	["Scarlet Macaw"] = Color3.fromRGB(255, 36, 0),
-	["Capybara"] = Color3.fromRGB(160, 82, 45),
-	["Ostrich"] = Color3.fromRGB(240, 240, 240),
-}
-
-local eggESP, eggLabels = {}, {}
-local visible = true
-local cooldown = false
-
-local function clearAll()
-	for _, esp in ipairs(eggESP) do if esp and esp.Parent then esp:Destroy() end end
-	for _, label in ipairs(eggLabels) do if label and label.Parent then label:Destroy() end end
-	eggESP = {}
-	eggLabels = {}
+	status.Text = "✅ Age changed to 50!"
+	injectButton.Text = "🔁 Spoof Again"
+	injectButton.Visible = true
 end
 
-local function createESP(egg, color)
-	local highlight = Instance.new("Highlight")
-	highlight.Adornee = egg
-	highlight.FillColor = color
-	highlight.FillTransparency = 0.6
-	highlight.OutlineColor = color
-	highlight.OutlineTransparency = 0
-	highlight.Parent = egg
-	table.insert(egg
+-- 🔘 BUTTON CLICK
+injectButton.MouseButton1Click:Connect(startSpoofing)
